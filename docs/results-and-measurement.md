@@ -1,27 +1,27 @@
-# Resultados e Métricas
+# Results and Metrics
 
-Análises habilitadas pelo projeto e métricas recomendadas para monitoramento e otimização.
+Analyses enabled by the project and recommended metrics for monitoring and optimization.
 
-## O que o Projeto Habilita
+## What the Project Enables
 
-**Análise de Vendas Consolidada ERP + E-commerce:** Visão unificada de vendas (Bling ERP + WooCommerce). Permite receita consolidada, comparação de performance entre canais, análise de sazonalidade, segmentação de clientes e ticket médio por canal.
+**Consolidated ERP + E‑commerce Sales Analysis:** Unified sales view (Bling ERP + WooCommerce). Enables consolidated revenue, channel performance comparison, seasonality analysis, customer segmentation, and average order value by channel.
 
-**Taxa de Cancelamento por Canal:** Percentual de pedidos cancelados por origem (Bling vs WooCommerce). Identifica diferenças operacionais, correlaciona cancelamentos com fatores específicos e compara padrões entre canais.
+**Cancellation Rate by Channel:** Share of cancelled orders by origin (Bling vs WooCommerce). Surfaces operational differences, links cancellations to specific factors, and compares patterns across channels.
 
-**Lead Time: Pedido (WooCommerce) → Faturamento (Bling):** Tempo entre criação do pedido e faturamento. Permite identificar gargalos, garantir SLA, analisar tendências e alertar sobre lead times acima do esperado.
+**Lead Time: Order (WooCommerce) → Invoicing (Bling):** Time between order creation and invoicing/billing in Bling. Helps find bottlenecks, enforce SLA, analyze trends, and alert on unusually long lead times.
 
-**Divergências de Status e Reconciliação:** Identificação de inconsistências entre status em Bling vs WooCommerce. Analisa volume de divergências, padrões, tempo de resolução, impacto financeiro e taxa de reconciliação automática vs manual.
+**Status Divergences and Reconciliation:** Inconsistencies between Bling and WooCommerce statuses. Analyze divergence volume, patterns, resolution time, financial impact, and automatic vs manual reconciliation rates.
 
-## Métricas Recomendadas
+## Recommended Metrics
 
-**Volume Diário de Pedidos Bling Carregados:** Quantidade de pedidos inseridos em `pedidos_bling` por data. Monitora volume processado, identifica dias anormais e valida completude.
+**Daily Volume of Loaded Bling Orders:** Count of orders inserted into `pedidos_bling` per date. Monitors throughput, highlights abnormal days, and validates completeness.
 
-**Taxa de Erro por Data:** Percentual de pedidos que falharam durante processamento. Fórmula: `(pedidos_com_erro / pedidos_totais) * 100`. Identifica datas problemáticas e valida qualidade do pipeline.
+**Error Rate per Date:** Share of orders that failed during processing. Formula: `(pedidos_com_erro / pedidos_totais) * 100`. Surfaces problematic dates and validates pipeline quality.
 
-**Tempo de Execução por Data:** Duração total do processamento (início ao fim). Monitora performance, identifica degradação e estima tempo para backfill histórico.
+**Execution Time per Date:** Total processing duration (start to end). Tracks performance, spots degradation, and estimates historical backfill time.
 
-**Taxa de Match Bling ↔ WooCommerce:** Percentual de pedidos do Bling unificados com WooCommerce. Valida qualidade da integração e identifica pedidos órfãos. Interpretação: >90% (bom), <70% (possível problema), tendência decrescente (sincronização ou mudança nos dados).
+**Bling ↔ WooCommerce Match Rate:** Share of Bling orders successfully unified with WooCommerce. Validates integration quality and flags orphan orders. Rule of thumb: above ~90% is healthy; below ~70% warrants investigation; a declining trend may indicate sync or upstream data drift.
 
-## Dashboard Recomendado
+## Recommended Dashboard
 
-Visão consolidada: volume diário (linha), taxa de erro (barras), tempo de execução (linha), taxa de match (KPI), alertas para métricas fora do esperado. Atualização diária após processamento de cada data.
+Consolidated view: daily volume (line), error rate (bars), execution time (line), match rate (KPI), alerts when metrics stray from expectations. Refresh daily after each date finishes processing.

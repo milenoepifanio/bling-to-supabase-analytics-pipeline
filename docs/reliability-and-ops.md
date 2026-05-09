@@ -1,25 +1,25 @@
-# Confiabilidade e Operações
+# Reliability and Operations
 
-Estratégias implementadas e recomendadas para garantir robustez, idempotência e auditabilidade do pipeline.
+Implemented and recommended strategies for pipeline robustness, idempotency, and auditability.
 
-## O que Já Existe
+## What Already Exists
 
-**Retry para Erros 429:** Retry automático com até 3 tentativas (espera progressiva: 15s, 30s, 45s). Resiliência a limites temporários da API.
+**Retry on 429 errors:** Automatic retry with up to 3 attempts (progressive backoff: 15s, 30s, 45s). Resilience to temporary API limits.
 
-**Controle por Datas Pendentes:** Tabela `bling_controle_datas` controla datas processadas (status ✅). Sempre processa a data mais antiga pendente, permitindo retomada após falhas.
+**Pending-date control:** The `bling_controle_datas` table tracks processed dates (✅ status). Always processes the oldest pending date, enabling resume after failures.
 
-**Tratamento de Nulos e Tipos:** Funções `safe_*` (`safe()`, `safe_date()`, `safe_int()`, `safe_num()`) garantem qualidade de dados na ingestão, evitando erros de tipo e padronizando valores nulos.
+**Null and type handling:** `safe_*` functions (`safe()`, `safe_date()`, `safe_int()`, `safe_num()`) safeguard ingestion quality, avoiding type errors and standardizing nulls.
 
-## Recomendações (Aplicadas no Supabase)
+## Recommendations (Applied in Supabase)
 
-**Constraints e Unique Keys:** Unique constraints em `pedido_id` e `pedido_numero`, NOT NULL em campos críticos, check constraints para validação. Previne duplicação e garante integridade.
+**Constraints and unique keys:** Unique constraints on `pedido_id` and `pedido_numero`, NOT NULL on critical fields, check constraints for validation. Prevents duplication and upholds integrity.
 
-**Idempotência via Upsert:** `INSERT ... ON CONFLICT (pedido_id) DO UPDATE` permite reexecutar pipeline sem duplicar dados, atualizando registros existentes quando necessário. Aplicado no Supabase para garantir consistência no reprocessamento.
+**Idempotency via upsert:** `INSERT ... ON CONFLICT (pedido_id) DO UPDATE` lets you rerun the pipeline without duplicating data, updating existing rows when needed. Applied in Supabase for consistent reprocessing.
 
-**Tabela `etl_runs` para Auditoria:** Estrutura com `data_processada`, `inicio_execucao`, `fim_execucao`, `status`, `pedidos_processados`, `pedidos_com_erro`, `duracao_segundos`. Permite rastreabilidade, identificação de problemas e análise de performance.
+**`etl_runs` table for auditing:** Structure with `data_processada`, `inicio_execucao`, `fim_execucao`, `status`, `pedidos_processados`, `pedidos_com_erro`, `duracao_segundos`. Enables traceability, issue detection, and performance analysis.
 
-## Estratégia de Confiabilidade
+## Reliability Strategy
 
-**Camadas de Proteção:** Pipeline (retry, tratamento de tipos, controle de datas) → Supabase Constraints (prevenção de duplicação) → Supabase Upsert (idempotência) → Auditoria (rastreabilidade).
+**Defense in depth:** Pipeline (retry, type handling, date control) → Supabase constraints (duplicate prevention) → Supabase upsert (idempotency) → Audit trail (traceability).
 
-**Recuperação:** Em caso de falha, data permanece pendente. Próxima execução identifica data pendente, upsert evita duplicação de pedidos já processados, processamento continua de onde parou. Para reprocessar data já processada: resetar status em `bling_controle_datas`, reexecutar pipeline, upsert atualiza/insere dados, constraints garantem integridade.
+**Recovery:** On failure, the date stays pending. The next run picks the pending date, upsert avoids duplicating orders already processed, and processing resumes where it stopped. To reprocess an already-processed date: reset status in `bling_controle_datas`, rerun the pipeline—upsert updates/inserts data and constraints preserve integrity.
