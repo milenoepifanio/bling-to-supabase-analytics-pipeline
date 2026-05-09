@@ -23,7 +23,7 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-# Ambientes Virtuais
+# Virtual environments
 venv/
 env/
 ENV/
@@ -37,7 +37,7 @@ venv.bak/
 *output*.ipynb
 *-output.ipynb
 
-# Arquivos de Configuração com Secrets
+# Configuration files containing secrets
 .env
 .env.local
 .env.*.local
@@ -54,7 +54,7 @@ credentials.json
 *~
 .DS_Store
 
-# Sistema Operacional
+# Operating system
 .DS_Store
 .DS_Store?
 ._*
@@ -69,25 +69,25 @@ desktop.ini
 logs/
 *.log.*
 
-# Arquivos Temporários
+# Temporary files
 *.tmp
 *.temp
 *.bak
 *.backup
 *.old
 
-# Arquivos de Teste
+# Testing
 .pytest_cache/
 .coverage
 htmlcov/
 .tox/
 .hypothesis/
 
-# Arquivos de Documentação gerados
+# Generated documentation
 docs/_build/
 docs/.doctrees/
 
-# Arquivos de dados sensíveis
+# Sensitive data files
 data/raw/
 data/private/
 *.csv
@@ -96,11 +96,11 @@ data/private/
 !sample_*.csv
 !example_*.csv
 
-# Arquivos de cache
+# Cache
 .cache/
 *.cache
 
-# Arquivos do Supabase (se houver)
+# Supabase
 .supabase/
 
 notebooks

@@ -1,53 +1,63 @@
-# Pipeline de Ingestão
+# Ingestion Pipeline
 
-Pipeline de ingestão de pedidos do Bling. Processamento incremental dia a dia com controle de datas.
+Bling order ingestion pipeline. Incremental day-by-day processing with date control.
 
-## Fluxo do Pipeline
+## Pipeline Flow
 
-### 1. Leitura de Credenciais
-Busca token e refresh_token do Bling na tabela `integracoes` do Supabase (id = 1).
+### 1. Credential Read
 
-### 2. Identificação da Próxima Data
-Consulta a tabela `bling_controle_datas` para encontrar a próxima data pendente (status diferente de ✅). Sempre processa a **data mais antiga pendente**.
+Load Bling `token` and `refresh_token` from the `integracoes` table in Supabase (`id = 1`).
 
-### 3. Listagem de Pedidos do Dia
-Chamada à API Bling (`GET /Api/v3/pedidos/vendas`) com `dataInicial` e `dataFinal` iguais à data selecionada. Retorna lista de IDs e números dos pedidos.
+### 2. Next Date Selection
 
-### 4. Busca de Detalhes por Pedido
-Para cada pedido encontrado:
-- Chamada à API Bling (`GET /Api/v3/pedidos/vendas/{id}`)
-- **Retry automático** em caso de erro 429 (rate limit):
-  - 3 tentativas máximas
-  - Espera progressiva: 15s, 30s, 45s
-- Aguarda **9 segundos** entre cada requisição para respeitar rate limit
+Query `bling_controle_datas` for the next pending date (status not ✅). Always processes the **oldest pending date**.
 
-### 5. Padronização de Campos
-Aplica funções `safe_*` para normalização:
-- `safe()` - Trata valores indefinidos ou vazios
-- `safe_date()` - Valida e trata datas inválidas
-- `safe_int()` - Converte para inteiro com tratamento de erros
-- `safe_num()` - Converte para número decimal com tratamento de erros
+### 3. Daily Order List
 
-### 6. Salvamento no Supabase
-Inserção dos dados normalizados na tabela `pedidos_bling`.
+Call the Bling API (`GET /Api/v3/pedidos/vendas`) with `dataInicial` and `dataFinal` equal to the selected date. Returns IDs and numbers for orders.
 
-### 7. Marcação de Data como Processada
-Atualiza o status da data na tabela `bling_controle_datas` para ✅ após processar todos os pedidos do dia.
+### 4. Per-Order Detail Fetch
 
-## Limitações Explícitas
+For each order found:
+- Call the Bling API (`GET /Api/v3/pedidos/vendas/{id}`)
+- **Automatic retry** on 429 (rate limit):
+  - Up to 3 attempts
+  - Progressive wait: 15s, 30s, 45s
+- **9-second** pause between requests to honor rate limits
 
-### Processamento Síncrono
-Pedidos são processados **sequencialmente** (um por vez). Não há processamento paralelo, garantindo respeito ao rate limit mas limitando throughput.
+### 5. Field Standardization
 
-### Dependência de Rate Limit do Bling
-Pipeline é limitado pela política de rate limiting da API Bling:
-- **9 segundos** de espera obrigatória entre requisições de detalhes
-- Impacto direto no tempo total de processamento (ex: 100 pedidos = ~15 minutos mínimo)
+Apply `safe_*` helpers for normalization:
+- `safe()` — Handles undefined or empty values
+- `safe_date()` — Validates and handles invalid dates
+- `safe_int()` — Integer conversion with error handling
+- `safe_num()` — Decimal conversion with error handling
 
-### Reinício Manual (Backfill)
-Para processar múltiplas datas (backfill histórico):
-- É necessário **reiniciar a execução** após cada data processada
-- Reexecutar o pipeline para a próxima data
-- Processo manual, não automatizado para múltiplas datas consecutivas
+### 6. Save to Supabase
 
-**Nota:** A automação via orquestrador resolve parcialmente essa limitação, mas ainda processa uma data por execução.
+Insert normalized rows into `pedidos_bling`.
+
+### 7. Mark Date as Processed
+
+Update the date status in `bling_controle_datas` to ✅ after all orders for the day are processed.
+
+## Explicit Limitations
+
+### Synchronous Processing
+
+Orders are handled **sequentially** (one at a time). No parallel processing—respects rate limits but caps throughput.
+
+### Dependency on Bling Rate Limits
+
+The pipeline is bound by Bling API rate limiting:
+- **9 seconds** mandatory wait between detail requests
+- Direct impact on total runtime (e.g., 100 orders ≈ ~15 minutes minimum)
+
+### Manual Restart (Backfill)
+
+To process multiple dates (historical backfill):
+- You must **restart execution** after each processed date
+- Run the pipeline again for the next date
+- Manual process, not automated across consecutive dates in one shot
+
+**Note:** Orchestrator-based automation partly mitigates this, but each run still processes one date at a time.

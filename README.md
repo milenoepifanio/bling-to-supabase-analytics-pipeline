@@ -1,78 +1,78 @@
-# Importação de Pedidos Bling → Supabase
+# Bling Orders Import → Supabase
 
-Pipeline de ingestão incremental de pedidos históricos do Bling para Supabase, criando uma base analítica unificada com o WooCommerce para inteligência de negócios.
+Incremental ingestion pipeline for historical orders from Bling into Supabase, building a unified analytics layer with WooCommerce for business intelligence.
 
-## 📋 Sobre o Projeto
+## 📋 About the Project
 
-Este projeto realiza a importação e o processamento de pedidos históricos do **Bling** (ERP) para **Supabase**, processando os dados dia a dia de forma automatizada e controlada. Os dados são unificados no Supabase com o **WooCommerce** (e-commerce), gerando tabelas de dimensão e fato prontas para análises e métricas operacionais (receita, cancelamento, SLA).
+This project imports and processes historical **Bling** (ERP) orders into **Supabase**, processing data day by day in an automated, controlled way. Data is consolidated in Supabase alongside **WooCommerce** (e‑commerce), producing dimension and fact tables ready for analysis and operational metrics (revenue, cancellation, SLA).
 
-> **⚠️ Importante:** A integração Bling + WooCommerce ocorre na camada SQL do Supabase. Isso ocorre porque o fluxo anterior foi implementado por outro analista via N8N, e a lógica de integração já está consolidada no Supabase.
+> **⚠️ Important:** Bling + WooCommerce integration happens at the Supabase SQL layer. This is because the previous workflow was implemented by another analyst via N8N, and the integration logic is already consolidated in Supabase.
 
-## 🎯 Objetivo
+## 🎯 Goal
 
-Criar uma base única e confiável para pedidos e análises de vendas/operacionais, resolvendo o problema do processamento manual de históricos e da falta de controle sobre períodos processados.
+Provide a single, trustworthy source for orders and sales/operations analytics, addressing manual historical processing and lack of visibility into which periods have been processed.
 
-## 🏗️ Arquitetura
+## 🏗️ Architecture
 
-### Fluxo de Processamento
+### Processing Flow
 
-1. Conectar ao Supabase
-2. Buscar credenciais do Bling (`integracoes`)
-3. Identificar a próxima data pendente (`bling_controle_datas`)
-4. Listar vendas para a data (API Bling)
-5. Processar cada pedido (detalhes, normalização, inserção)
-6. Marcar data como processada (✅)
+1. Connect to Supabase
+2. Fetch Bling credentials (`integracoes`)
+3. Identify the next pending date (`bling_controle_datas`)
+4. List sales for that date (Bling API)
+5. Process each order (details, normalization, insertion)
+6. Mark the date as processed (✅)
 
-### Camadas no Supabase
+### Layers in Supabase
 
-- **Raw/Staging:** `pedidos_bling` (saída do pipeline)
-- **Staging Views:** Padronização, limpeza, tipos, status
-- **Integration Views:** Junção Bling ↔ WooCommerce
-- **Marts:** Fatos e dimensões para consumo analítico
+- **Raw/Staging:** `pedidos_bling` (pipeline output)
+- **Staging Views:** Standardization, cleanup, types, statuses
+- **Integration Views:** Bling ↔ WooCommerce joins
+- **Marts:** Facts and dimensions for analytics consumption
 
 ## 🛠️ Stack
 
-- **Backend:** Python 3.10, cliente Python do Supabase, pandas, requests
-- **Banco de dados:** PostgreSQL via Supabase
+- **Backend:** Python 3.10, Supabase Python client, pandas, requests
+- **Database:** PostgreSQL via Supabase
 - **API:** Bling API v3
-- **Infraestrutura:** Orquestração e automação (execução manual ou agendada)
+- **Infrastructure:** Orchestration and automation (manual or scheduled execution)
 
-## ✨ Funcionalidades
+## ✨ Features
 
-- ✅ Processamento incremental (dia a dia) com controle via `bling_controle_datas`
-- ✅ Rate limiting (9s entre requisições, retry automático para 429)
-- ✅ Tratamento robusto de dados (tipos, datas, nulos)
-- ✅ Execução automatizada (manual ou agendada)
-- ✅ Base analítica com tabelas de dimensão e fato prontas para BI
+- ✅ Incremental processing (day by day) controlled via `bling_controle_datas`
+- ✅ Rate limiting (9s between requests, automatic retry on 429)
+- ✅ Robust data handling (types, dates, nulls)
+- ✅ Automated execution (manual or scheduled)
+- ✅ Analytics-ready dimension and fact tables for BI
 
-## 📊 Resultados
+## 📊 Outcomes
 
-O projeto habilita:
+The project enables:
 
-- Análise consolidada de vendas (ERP + e-commerce)
-- Taxa de cancelamento por canal
-- Lead time: pedido (WooCommerce) → faturamento (Bling)
-- Divergências de status e reconciliação
+- Consolidated sales analysis (ERP + e‑commerce)
+- Cancellation rate by channel
+- Lead time: order (WooCommerce) → invoicing/billing (Bling)
+- Status discrepancies and reconciliation
 
-## 🔒 Confiabilidade
+## 🔒 Reliability
 
-- Retry automático para erros 429 (rate limit)
-- Controle de datas pendentes para processamento incremental
-- Tratamento de nulos e tipos (`safe_*`)
-- Idempotência via upsert no Supabase
-- Constraints e chaves únicas para garantir integridade
+- Automatic retry on 429 (rate limit)
+- Pending-date control for incremental processing
+- Null and type handling (`safe_*`)
+- Idempotency via upsert to Supabase
+- Constraints and unique keys for integrity
 
-## 📚 Documentação
+## 📚 Documentation
 
-Documentação completa disponível em `docs/`:
+Full documentation lives under `docs/`:
 
-- **[Visão Geral](docs/overview.md)** - Visão geral do projeto, stack, arquitetura e fluxo
-- **[Fontes de Dados](docs/data-sources.md)** - Bling API v3, WooCommerce e desafios de integração
-- **[Pipeline de Ingestão](docs/ingestion-pipeline.md)** - Fluxo detalhado do pipeline e limitações
-- **[Modelagem e Integração](docs/supabase-modeling-and-integration.md)** - Arquitetura em camadas, estratégias de matching e unificação
-- **[Confiabilidade e Operações](docs/reliability-and-ops.md)** - Retry, idempotência, constraints e auditoria
-- **[Resultados e Métricas](docs/results-and-measurement.md)** - Análises habilitadas e métricas recomendadas
+- **[Overview](docs/overview.md)** — Project overview, stack, architecture, and flow
+- **[Data Sources](docs/data-sources.md)** — Bling API v3, WooCommerce, and integration challenges
+- **[Ingestion Pipeline](docs/ingestion-pipeline.md)** — Detailed pipeline flow and limitations
+- **[Modeling & Integration](docs/supabase-modeling-and-integration.md)** — Layered architecture, matching strategies, and consolidation
+- **[Reliability & Operations](docs/reliability-and-ops.md)** — Retry, idempotency, constraints, and audit
+- **[Results & Metrics](docs/results-and-measurement.md)** — Supported analyses and recommended metrics
 
-## 📄 Licença
+## 📄 License
 
-Este projeto foi desenvolvido como um estudo de caso de engenharia de dados.
+This project was developed as a data engineering case study.

@@ -1,33 +1,34 @@
-# Fontes de Dados
+# Data Sources
 
 ## Bling API v3
 
-**Endpoints utilizados:**
-- `GET /Api/v3/pedidos/vendas` - Lista vendas por data (dataInicial/dataFinal)
-- `GET /Api/v3/pedidos/vendas/{id}` - Detalhes completos de um pedido específico
+**Endpoints used:**
+- `GET /Api/v3/pedidos/vendas` — Lists sales by date (`dataInicial` / `dataFinal`)
+- `GET /Api/v3/pedidos/vendas/{id}` — Full details for a specific order
 
-**Autenticação:** Bearer token (obtido da tabela `integracoes` no Supabase)
-**Rate limiting:** 9 segundos entre requisições, retry automático para erros 429
-**Dados coletados:** Pedidos com informações completas (cliente, pagamento, transporte, itens, etc.)
+**Authentication:** Bearer token (from the `integracoes` table in Supabase)  
+**Rate limiting:** 9 seconds between requests, automatic retry on 429 errors  
+**Data collected:** Orders with complete information (customer, payment, shipping, line items, etc.)
 
-## Desafios Reais
+## Real-World Challenges
 
-### IDs Diferentes entre Bling e WooCommerce
+### Different IDs between Bling and WooCommerce
 
-Bling e WooCommerce utilizam sistemas de identificação distintos para os mesmos pedidos. A unificação ocorre no Supabase através de lógica SQL que identifica pedidos correspondentes (provavelmente via número do pedido, data, cliente, ou outros campos comuns).
+Bling and WooCommerce use different identification schemes for the same orders. Consolidation happens in Supabase through SQL logic that finds matching orders (likely via order number, date, customer, or other shared fields).
 
-### Regras de Status Diferentes
+### Different Status Rules
 
-Cada plataforma possui seu próprio sistema de status de pedidos:
-- **Bling:** Status específicos do ERP (ex: em aberto, faturado, cancelado)
-- **WooCommerce:** Status do e-commerce (ex: pending, processing, completed, cancelled)
+Each platform has its own order-status model:
+- **Bling:** ERP-specific statuses (e.g., open, invoiced, cancelled)
+- **WooCommerce:** E‑commerce statuses (e.g., pending, processing, completed, cancelled)
 
-A normalização e mapeamento de status é feito na camada SQL do Supabase durante a unificação.
+Status normalization and mapping is done in the Supabase SQL layer during consolidation.
 
-### Possíveis Atrasos de Sincronização
-Pedidos podem aparecer no WooCommerce antes do faturamento no ERP (Bling), criando inconsistências temporárias. A lógica de unificação no Supabase precisa lidar com:
-- Pedidos que existem em uma plataforma mas não na outra (temporariamente)
-- Necessidade de reprocessamento ou atualização quando o pedido aparece na segunda plataforma
-- Identificação de pedidos duplicados ou relacionados
+### Possible Sync Lag
 
-**Solução:** Processamento incremental e lógica de unificação robusta na camada SQL, com possibilidade de reprocessamento quando novos dados chegam.
+Orders may appear in WooCommerce before they are invoiced in the ERP (Bling), creating temporary inconsistencies. The consolidation logic in Supabase must handle:
+- Orders that exist on one platform but not the other (temporarily)
+- Need for reprocessing or refresh when the order appears on the second platform
+- Detection of duplicate or related orders
+
+**Approach:** Incremental processing and robust consolidation logic in the SQL layer, with the option to reprocess when new data arrives.

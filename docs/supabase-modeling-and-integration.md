@@ -1,41 +1,41 @@
-# Modelagem e Integração no Supabase
+# Modeling and Integration in Supabase
 
-Arquitetura em camadas para unificação de dados Bling + WooCommerce, garantindo fonte de verdade única e consistência temporal.
+Layered architecture for Bling + WooCommerce consolidation, aiming for a single source of truth and temporal consistency.
 
-## Camadas no Supabase
+## Layers in Supabase
 
-**Raw/Staging:** `pedidos_bling` - Dados brutos do Bling, estrutura próxima à API, sem transformações significativas. Permite reprocessamento e auditoria.
+**Raw/Staging:** `pedidos_bling` — Raw Bling data, structure close to the API, minimal transformation. Enables reprocessing and auditing.
 
-**Staging Views:** Padronização de tipos, limpeza (nulos, valores inválidos), mapeamento de status, validação com regras de negócio. Exemplo: `v_pedidos_bling_clean`.
+**Staging Views:** Type standardization, cleanup (nulls, invalid values), status mapping, business-rule validation. Example: `v_pedidos_bling_clean`.
 
-**Integration Views:** Matching de pedidos, merge de atributos, resolução de conflitos. Unifica dados das duas fontes. Exemplo: `v_pedidos_unificados`.
+**Integration Views:** Order matching, attribute merge, conflict resolution. Unifies data from both sources. Example: `v_pedidos_unificados`.
 
-**Marts:** Modelo dimensional com fato de vendas (métricas: receita, quantidade, descontos) e dimensões (Cliente, Produto, Tempo, Status, Loja). Estrutura otimizada para BI.
+**Marts:** Dimensional model with a sales fact (metrics: revenue, quantity, discounts) and dimensions (Customer, Product, Time, Status, Store). Structured for BI consumption.
 
-## Integração Bling + WooCommerce
+## Bling + WooCommerce Integration
 
-### Estratégias de Matching
+### Matching Strategies
 
-**1. Por `numeroLoja` (Preferencial):** Matching direto quando campo existe e é estável em ambas as fontes. Alta confiabilidade.
+**1. By `numeroLoja` (Preferred):** Direct match when the field exists and is stable in both sources. High confidence.
 
-**2. Por `pedido_numero + data + valor` (Match Probabilístico):** Fallback quando não há identificador direto. Considera múltiplos fatores, pode gerar falsos positivos.
+**2. By `pedido_numero + date + amount` (Probabilistic match):** Fallback when there is no direct identifier. Uses multiple signals; false positives are possible.
 
-**3. Por Tabela Ponte ("Crosswalk"):** Tabela `pedidos_crosswalk` com mapeamento explícito (`bling_id`, `woocommerce_id`, `confianca`). Controle total, permite regras complexas, requer manutenção.
+**3. Via bridge table (“crosswalk”):** `pedidos_crosswalk` with explicit mapping (`bling_id`, `woocommerce_id`, `confianca`). Full control and complex rules, but ongoing maintenance required.
 
-### Fonte de Verdade por Atributo
+### Source of Truth by Attribute
 
-Cada atributo tem fonte de verdade definida: **Status logístico/entrega** (WooCommerce), **Status financeiro/faturamento** (Bling), **Valor total** (Bling), **Dados do cliente** (Bling), **Dados de pagamento** (Bling), **Dados de transporte/rastreamento** (WooCommerce). Implementado via `COALESCE` ou `CASE WHEN` em views SQL.
+Each attribute has a defined source of truth: **Logistics/delivery status** (WooCommerce), **Financial/invoicing status** (Bling), **Total amount** (Bling), **Customer data** (Bling), **Payment data** (Bling), **Shipping/tracking data** (WooCommerce). Implemented via `COALESCE` or `CASE WHEN` in SQL views.
 
-### Tratamento de Divergências e Atrasos
+### Divergences and Lag
 
-**Divergências:** Views de reconciliação comparam valores entre fontes, tabela `pedidos_divergencias` registra divergências, regras de negócio definem qual fonte prevalece, alertas para divergências críticas. Exemplo: valor total diverge > 5% → usar Bling.
+**Divergences:** Reconciliation views compare values across sources; `pedidos_divergencias` records mismatches; business rules decide which source wins; alerts for critical gaps. Example: if total amounts differ by more than about 5%, prefer Bling.
 
-**Atrasos de Sincronização:** Processamento incremental permite reprocessamento, views consideram `created_at`/`updated_at`, atualização progressiva quando pedido aparece no Bling, estado intermediário mostra pedidos "parciais" até unificação completa.
- 
-### Garantia de Consistência Temporal
+**Sync lag:** Incremental processing allows reprocessing; views use `created_at` / `updated_at`; gradual refresh when an order lands in Bling; intermediate states can show “partial” orders until full unification.
 
-**Timestamps:** `created_at`, `updated_at` em todas as tabelas, versionamento opcional para mudanças críticas, snapshots para análises históricas.
+### Temporal Consistency
 
-**Idempotência:** Controle via `bling_controle_datas`, upsert logic previne duplicação, transações SQL garantem atomicidade.
+**Timestamps:** `created_at`, `updated_at` on tables, optional versioning for critical changes, snapshots for historical analysis.
 
-**Consistência em Views:** Views determinísticas, ordem de processamento (Bling → WooCommerce → Unificação), views materializadas atualizadas em horários definidos. Garantir que análises considerem mesmo "estado" dos dados ou documentar quando dados estão em transição.
+**Idempotency:** Controlled via `bling_controle_datas`, upsert logic prevents duplication, SQL transactions preserve atomicity.
+
+**View consistency:** Deterministic views, processing order (Bling → WooCommerce → Unified), materialized views refreshed on a schedule. Analyses should use a consistent snapshot of state—or document when data is mid-transition.

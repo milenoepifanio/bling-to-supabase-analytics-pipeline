@@ -1,43 +1,43 @@
-# Importação de Pedidos Bling - Visão Geral
+# Bling Orders Import — Overview
 
-Pipeline de ingestão de pedidos históricos do Bling para Supabase com processamento incremental. Dados unificados no Supabase com WooCommerce, criando tabelas dimensões e fatos prontas para BI e métricas operacionais (receita, cancelamento, SLA).
+Ingestion pipeline for historical Bling orders into Supabase with incremental processing. Data is consolidated in Supabase alongside WooCommerce, yielding dimension and fact tables ready for BI and operational metrics (revenue, cancellation, SLA).
 
-## Problema
+## Problem
 
-Necessidade de base única e confiável para pedidos e análises. Processamento manual histórico é trabalhoso e propenso a erros. Falta de controle sobre períodos processados.
+Need for a single, trustworthy base for orders and analytics. Manual historical processing is heavy and error-prone. Lack of visibility into which periods have been processed.
 
-## Solução
+## Solution
 
-Pipeline Python para ingestão incremental via API Bling. Processamento dia a dia com controle de datas no Supabase. **Integração Bling + WooCommerce ocorre na camada SQL do Supabase** (fluxo anterior via N8N por outro analista). Base analítica estruturada com dimensões e fatos.
+Python pipeline for incremental ingestion via the Bling API. Day-by-day processing with date control in Supabase. **Bling + WooCommerce integration happens in the Supabase SQL layer** (prior workflow via N8N by another analyst). Structured analytics layer with dimensions and facts.
 
-## Principais Funcionalidades
+## Main Features
 
-- Processamento incremental (data a data) com controle via `bling_controle_datas`
-- Rate limiting (9s entre requisições) e retry automático para 429
-- Tratamento robusto de dados (validação de tipos, datas e nulos)
-- Execução automatizada (manual ou agendada)
-- Base analítica com tabelas de dimensão e fato prontas para BI
+- Incremental processing (date by date) controlled via `bling_controle_datas`
+- Rate limiting (9s between requests) and automatic retry on 429
+- Robust data handling (type validation, dates, nulls)
+- Automated execution (manual or scheduled)
+- Analytics-ready dimension and fact tables for BI
 
-## Stack / Tecnologias
+## Stack / Technologies
 
 **Backend:** Python 3.10, Supabase Python client, pandas, requests
 
-**Database:** PostgreSQL via Supabase. Tabelas: `integracoes`, `bling_controle_datas`, `pedidos_bling`. Views/funções SQL e CRON jobs para unificação Bling + WooCommerce (criação de `id_potencia`, remoção de duplicidades).
+**Database:** PostgreSQL via Supabase. Tables: `integracoes`, `bling_controle_datas`, `pedidos_bling`. SQL views/functions and CRON jobs for Bling + WooCommerce consolidation (creating `id_potencia`, removing duplicates).
 
-**Infraestrutura:** Orquestração e automação (execução manual ou agendada)
+**Infrastructure:** Orchestration and automation (manual or scheduled execution)
 
-**API:** Bling API v3 com autenticação Bearer token e rate limiting
+**API:** Bling API v3 with Bearer-token authentication and rate limiting
 
-## Implementado
+## What Is Implemented
 
-Conexão Supabase, busca de credenciais, processamento incremental de datas (sempre a mais antiga pendente), listagem de vendas por data, busca de detalhes completos, normalização de dados (safe functions), inserção em `pedidos_bling`, controle de status de datas, rate limiting (9s), retry automático para 429, execução automatizada, tratamento de erros.
+Supabase connectivity, credential fetch, incremental date processing (always the oldest pending date), listing sales by date, full detail fetch, data normalization (`safe_*` helpers), inserts into `pedidos_bling`, date status tracking, rate limiting (9s), automatic retry on 429, automated execution, error handling.
 
-## Arquitetura
+## Architecture
 
-**Separação de responsabilidades:**
-- **Pipeline:** Ingestão de dados do Bling
-- **Supabase (SQL):** Transformações, unificação Bling + WooCommerce, criação de `id_potencia`, remoção de duplicidades
+**Separation of concerns:**
+- **Pipeline:** Ingest data from Bling
+- **Supabase (SQL):** Transformations, Bling + WooCommerce consolidation, `id_potencia` creation, duplicate removal
 
-**Fluxo:** Conectar Supabase → Buscar credenciais (`integracoes`) → Identificar próxima data pendente (`bling_controle_datas`) → Listar vendas (API Bling) → Processar cada pedido (detalhes, normalização, inserção) → Marcar data como processada (✅)
+**Flow:** Connect to Supabase → Fetch credentials (`integracoes`) → Identify next pending date (`bling_controle_datas`) → List sales (Bling API) → Process each order (details, normalization, insert) → Mark date as processed (✅)
 
-**Dados processados:** ID/número, datas (criação, saída, prevista), totais/descontos, cliente, situação, loja, pagamento, transporte, endereço, vendedor, intermediador, taxas, observações.
+**Fields processed:** ID/number, dates (created, shipped, expected), totals/discounts, customer, status, store, payment, shipping, address, seller, intermediary, fees, notes.
