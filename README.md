@@ -2,6 +2,13 @@
 
 Incremental ingestion pipeline for historical orders from Bling into Supabase, building a unified analytics layer with WooCommerce for business intelligence.
 
+![Python](https://img.shields.io/badge/Python-Professional-blue)
+![Data Engineering](https://img.shields.io/badge/Data_Engineering-Ingestion-green)
+![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Analytics-316192)
+![REST API](https://img.shields.io/badge/API-Bling_V3-orange)
+![Analytics](https://img.shields.io/badge/Analytics-BI_Ready-purple)
+
 ## 📋 About the Project
 
 This project imports and processes historical **Bling** (ERP) orders into **Supabase**, processing data day by day in an automated, controlled way. Data is consolidated in Supabase alongside **WooCommerce** (e‑commerce), producing dimension and fact tables ready for analysis and operational metrics (revenue, cancellation, SLA).
